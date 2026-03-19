@@ -1,0 +1,119 @@
+﻿@model IEnumerable<DevBlog.Models.Blog>
+@{
+    ViewData["Title"] = "Ana Sayfa";
+    // Sadece yayında olan blogların kategorilerini tekilleştirerek alıyoruz
+    var categories = Model != null
+        ? Model.Where(b => b.Category != null).Select(b => b.Category.Name).Distinct().ToList()
+        : new List<string>();
+}
+
+<div class="container mt-5 mb-5">
+    <div class="row align-items-center mb-5">
+        <div class="col-lg-8">
+            <h1 class="display-4 fw-bold mb-3">Yazılım, Yapay Zeka ve <br/> Süreçler</h1>
+            <p class="lead text-muted">Kodlamadan proje yönetimine, geliştirme süreçlerindeki notlarım.</p>
+        </div>
+        <div class="col-lg-4 mt-4 mt-lg-0">
+            <div class="search-box position-relative">
+                <i class="fa-solid fa-search text-muted position-absolute" style="top: 50%; left: 15px; transform: translateY(-50%);"></i>
+                <input type="text" id="searchInput" class="form-control form-control-lg ps-5" placeholder="Makale ara..." onkeyup="filterBlogs()" style="border-radius: 2rem;">
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap mb-5" id="categoryFilters">
+        <span class="badge bg-primary text-white rounded-pill px-4 py-2 category-pill" onclick="filterByCategory('Tümü', this)" style="cursor: pointer; font-size: 0.95rem;">Tümü</span>
+
+        @foreach (var cat in categories)
+        {
+            <span class="badge bg-light text-dark border rounded-pill px-4 py-2 category-pill" onclick="filterByCategory('@cat', this)" style="cursor: pointer; font-size: 0.95rem;">@cat</span>
+        }
+    </div>
+
+    <div class="row g-4" id="blogContainer">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                <div class="col-md-4 blog-item" data-category="@item.Category?.Name" data-title="@item.Title.ToLower()">
+                    <div class="card h-100 border-0 shadow-sm" style="border-radius: 1rem; overflow: hidden;">
+                        <img src="@item.ImageUrl" class="card-img-top" alt="@item.Title" style="height: 200px; object-fit: cover;">
+                        <div class="card-body p-4 d-flex flex-column">
+                            <span class="badge bg-primary bg-opacity-10 text-primary mb-3" style="width: fit-content; font-size: 0.85rem;">@item.Category?.Name</span>
+                            <h5 class="card-title fw-bold mb-3">@item.Title</h5>
+                            <p class="card-text text-muted mb-4" style="font-size: 0.9rem;">
+                                @(item.Content.Length > 100 ? System.Text.RegularExpressions.Regex.Replace(item.Content.Substring(0, 100), "<.*?>", String.Empty) + "..." : System.Text.RegularExpressions.Regex.Replace(item.Content, "<.*?>", String.Empty))
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center mt-auto border-top pt-3">
+                                <span class="text-muted small"><i class="fa-regular fa-calendar me-1"></i> @item.CreatedDate.ToString("dd.MM.yyyy")</span>
+                                <a asp-controller="Home" asp-action="Oku" asp-route-id="@item.Id" class="btn btn-sm btn-light fw-bold text-primary rounded-pill px-3">Oku <i class="fa-solid fa-arrow-right ms-1"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center py-5">
+                <i class="fa-solid fa-pen-nib fs-1 text-muted mb-3"></i>
+                <p class="text-muted fs-5">Henüz yayınlanmış bir makale bulunmuyor.</p>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Şu an seçili olan kategori (Başlangıçta Tümü)
+        let currentCategory = 'Tümü';
+
+        // 1. Kategori Haplarına (Pills) tıklanınca çalışır
+        function filterByCategory(category, element) {
+            currentCategory = category;
+
+            // Tüm hapların rengini pasif (gri/beyaz) yap
+            document.querySelectorAll('.category-pill').forEach(pill => {
+                pill.classList.remove('bg-primary', 'text-white');
+                pill.classList.add('bg-light', 'text-dark', 'border');
+            });
+
+            // Tıklanan hapı aktif (mavi) yap
+            element.classList.remove('bg-light', 'text-dark', 'border');
+            element.classList.add('bg-primary', 'text-white');
+
+            // Filtreyi uygula
+            applyFilters();
+        }
+
+        // 2. Arama kutusuna yazı yazıldıkça çalışır
+        function filterBlogs() {
+            applyFilters();
+        }
+
+        // 3. Asıl gizleme/gösterme işlemini yapan ana fonksiyon
+        function applyFilters() {
+            // Arama kutusundaki yazıyı küçük harfe çevir
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+            // Sayfadaki tüm blog kartlarını al
+            const blogs = document.querySelectorAll('.blog-item');
+
+            blogs.forEach(blog => {
+                // Kartın başlığını ve kategorisini al
+                const title = blog.getAttribute('data-title');
+                const category = blog.getAttribute('data-category');
+
+                // Kurallara uyuyor mu kontrol et
+                const matchesSearch = title.includes(searchText);
+                const matchesCategory = (currentCategory === 'Tümü' || category === currentCategory);
+
+                // Hem aramaya hem kategoriye uyuyorsa göster, uymuyorsa gizle
+                if (matchesSearch && matchesCategory) {
+                    blog.style.display = 'block';
+                } else {
+                    blog.style.display = 'none';
+                }
+            });
+        }
+    </script>
+}

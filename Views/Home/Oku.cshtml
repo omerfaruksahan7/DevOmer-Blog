@@ -1,0 +1,127 @@
+﻿@model DevBlog.Models.Blog
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="container mt-4 mb-5">
+  
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary rounded-pill mb-4">
+        <i class="fa-solid fa-arrow-left me-2"></i>Geri Dön
+    </a>
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="position-relative shadow-lg mb-5" style="border-radius: 1rem; overflow: hidden;">
+                <img src="@Model.ImageUrl" alt="@Model.Title" style="width: 100%; height: 400px; object-fit: cover;">
+                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-end p-5" style="background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);">
+                    <div class="text-white">
+                        <span class="badge bg-primary mb-3 px-3 py-2 rounded-pill fs-6">@Model.Category?.Name</span>
+                        <h1 class="display-4 fw-bold mb-3">@Model.Title</h1>
+                        <div class="d-flex gap-4 opacity-75 fw-medium">
+                            <span><i class="fa-regular fa-calendar me-2"></i>@Model.CreatedDate.ToString("dd MMMM yyyy")</span>
+                            <span><i class="fa-regular fa-eye me-2"></i>@Model.ViewCount Okunma</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="article-content fs-5" style="line-height: 1.8; color: #444;">
+                @Html.Raw(Model.Content)
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@* Chatbot *@
+
+<button id="chat-toggle" class="btn btn-primary shadow-lg d-flex justify-content-center align-items-center" style="position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; z-index: 1000; border-radius: 50%;">
+    <i class="fa-solid fa-message fs-4 text-white"></i>
+</button>
+
+<div id="chat-window" class="card shadow-lg d-none" style="position: fixed; bottom: 100px; right: 30px; width: 350px; z-index: 1000; border-radius: 1rem; overflow: hidden; border: none;">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center p-3">
+        <span class="fw-bold"><i class="fa-solid fa-robot me-2"></i>Makale Asistanı</span>
+        <button id="chat-close" class="btn-close btn-close-white" aria-label="Close"></button>
+    </div>
+    <div class="card-body" id="chat-body" style="height: 350px; overflow-y: auto; background-color: #f8f9fa;">
+        <div class="mb-3 text-start">
+            <span class="badge bg-secondary p-3 text-wrap text-start shadow-sm" style="font-size: 0.95rem; border-radius: 1rem 1rem 1rem 0; line-height: 1.4; background-color: #e9ecef !important; color: #333 !important;">
+                Merhaba! Bu makale hakkında merak ettiğin bir şey varsa bana sorabilirsin.
+            </span>
+        </div>
+    </div>
+    <div class="card-footer bg-white p-3 border-top-0">
+        <div class="input-group shadow-sm" style="border-radius: 2rem;">
+            <input type="text" id="chat-input" class="form-control border-0 bg-light" placeholder="Bir soru sor..." style="border-radius: 2rem 0 0 2rem; padding-left: 1.2rem;">
+            <button class="btn btn-light bg-light border-0 text-primary" id="chat-send" style="border-radius: 0 2rem 2rem 0; padding-right: 1.2rem;">
+                <i class="fa-solid fa-paper-plane fs-5"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const chatToggle = document.getElementById('chat-toggle');
+        const chatWindow = document.getElementById('chat-window');
+        const chatClose = document.getElementById('chat-close');
+        const chatSend = document.getElementById('chat-send');
+        const chatInput = document.getElementById('chat-input');
+        const chatBody = document.getElementById('chat-body');
+
+        chatToggle.addEventListener('click', () => chatWindow.classList.toggle('d-none'));
+        chatClose.addEventListener('click', () => chatWindow.classList.add('d-none'));
+
+        chatSend.addEventListener('click', async () => {
+            const soru = chatInput.value.trim();
+            if (!soru) return;
+
+            chatBody.innerHTML += `
+                <div class="mb-3 text-end">
+                    <span class="badge bg-primary p-3 text-wrap text-start shadow-sm" style="font-size: 0.95rem; border-radius: 1rem 1rem 0 1rem; line-height: 1.4;">
+                        ${soru}
+                    </span>
+                </div>`;
+
+            chatInput.value = '';
+            chatBody.scrollTop = chatBody.scrollHeight;
+
+            const beklemeId = "bekliyor-" + Date.now();
+            chatBody.innerHTML += `
+                <div id="${beklemeId}" class="mb-3 text-start">
+                    <span class="badge bg-secondary p-3 text-wrap shadow-sm" style="font-size: 0.95rem; border-radius: 1rem 1rem 1rem 0;">
+                        <i class="fa-solid fa-ellipsis fa-fade fs-5"></i>
+                    </span>
+                </div>`;
+            chatBody.scrollTop = chatBody.scrollHeight;
+
+            try {
+                const response = await fetch('/Chat/Sor', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    // DİKKAT: Artık gizli ID'ye gerek yok! Model.Id diyerek o anki makalenin ID'sini C#'a doğrudan veriyoruz.
+                    body: JSON.stringify({ Soru: soru, BlogId: @Model.Id })
+                });
+
+                const data = await response.json();
+
+                document.getElementById(beklemeId).remove();
+                chatBody.innerHTML += `
+                    <div class="mb-3 text-start">
+                        <span class="badge bg-secondary p-3 text-wrap text-start shadow-sm" style="font-size: 0.95rem; border-radius: 1rem 1rem 1rem 0; line-height: 1.4; background-color: #e9ecef !important; color: #333 !important;">
+                            ${data.yanit}
+                        </span>
+                    </div>`;
+                chatBody.scrollTop = chatBody.scrollHeight;
+
+            } catch (error) {
+                document.getElementById(beklemeId).remove();
+                alert("Yapay zeka servisine bağlanılamadı.");
+            }
+        });
+
+        chatInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') chatSend.click();
+        });
+    </script>
+}
