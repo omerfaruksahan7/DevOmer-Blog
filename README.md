@@ -15,20 +15,17 @@ Projenin arayüzüne ve temel özelliklerine hızlıca göz atın:
 ### 1. Ziyaretçi Ana Sayfası & Arama
 Statik HTML tasarımdan dinamik yapıya geçiş. Kategori hapları (pills) ve sayfa yenilenmeden çalışan AJAX tabanlı anlık arama motoru.
 
-> *[BURAYA ANA SAYFANIN EKRAN GÖRÜNTÜSÜNÜ EKLE]*
-> Örnek: ![Ana Sayfa](https://raw.githubusercontent.com/KULLANICI_ADIN/DevOmer-Blog/main/screenshots/homepage.png)
+<img width="1283" height="778" alt="image" src="https://github.com/user-attachments/assets/8c17c34a-4a88-44ee-8160-a1a4e722d481" />
 
 ### 2. Akıllı Makale Asistanı (RAG Mantığı)
 Sadece `Oku.cshtml` sayfasında görünen, ziyaretçinin okuduğu makalenin içeriğini anlayan ve sorularına o makale temelinde kısa, öz cevaplar veren **Gemini 2.5 Flash** entegrasyonlu chatbot.
 
-> *[BURAYA CHATBOTUN AÇIK OLDUĞU MAKALE SAYFASININ EKRAN GÖRÜNTÜSÜNÜ EKLE]*
-> Örnek: ![Yapay Zeka Asistanı](https://raw.githubusercontent.com/KULLANICI_ADIN/DevOmer-Blog/main/screenshots/ai-asistant.png)
+<img width="1280" height="830" alt="image" src="https://github.com/user-attachments/assets/ba27676e-4ed1-4eda-b9ad-0d2a97522649" />
 
 ### 3. Yönetim (Admin) Paneli
 Güvenli giriş, zengin metin editörü (Quill.js) ile makale oluşturma, kategori yönetimi ve yayına alma süreçlerinin yönetildiği panel.
 
-> *[BURAYA ADMİN PANELİNDEN BİR EKRAN GÖRÜNTÜSÜ EKLE]*
-> Örnek: ![Yönetim Paneli](https://raw.githubusercontent.com/KULLANICI_ADIN/DevOmer-Blog/main/screenshots/admin-panel.png)
+<img width="1457" height="750" alt="image" src="https://github.com/user-attachments/assets/8fc41944-d794-43e6-8233-369fc762301f" />
 
 ---
 
